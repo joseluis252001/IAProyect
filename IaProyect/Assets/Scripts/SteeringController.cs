@@ -5,7 +5,7 @@ public class SteeringController : MonoBehaviour
     Seek seek;
 
     public Transform target;
-
+    public GameObject player;
     Vector3 velocity = Vector3.zero;
 
     public float maxEnemySpeed = 5f;
@@ -14,12 +14,14 @@ public class SteeringController : MonoBehaviour
 
     void Start()
     {
+        
         seek = new Seek(target.position, maxEnemySpeed);
         seek.usarArrival = true; 
     }
 
     void FixedUpdate()
     {
+        
         seek.targetPosition = target.position;
         seek.velocity = velocity;
         seek.maxSpeed = maxEnemySpeed;
