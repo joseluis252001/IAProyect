@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SCeneController : MonoBehaviour
+public class SceneController : MonoBehaviour
 {
    public GameObject npc;
    public GameObject minienemy;

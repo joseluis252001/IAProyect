@@ -3,48 +3,43 @@ using System.Collections;
 using UnityEngine.Rendering;
 public class WanderController : MonoBehaviour
 {
-    
-    public GameObject seek;
-
-    public Vector3 target= new Vector3();
-
-    
-    public GameObject circle;
-
-    public bool generate;
-
-   
-
-    public IEnumerator targetchange()
-    {
-        while (generate)
-        {
-            int randomx = Random.Range( 26, -26);
-            int randomz = Random.Range(26,-26);
-            target = new Vector3(randomx,0,randomz);
-            transform.position = target;
-
-             Debug.Log($"{target} se esta usando");
-            yield return new WaitForSeconds(1);
-           
-        }
-
-    }
-
+    //punto que se movera el npc
+    public Vector3 target;
+    //bucle de movimiento
+    public bool generate = true;
+    //discncia del circulo al npc
+    float circleDistance = 5f;
+    //tamaño del circulo
+    float circleRadius = 5f;
+    //tiempo maximo para la espera del bucle
+    float tiempoMax = 3f;
+    //tiempo de espera
+    float tiempo = 1f;
     void Start()
     {
        StartCoroutine(targetchange());
     }
 
-    void Update()
+     public IEnumerator targetchange()
     {
+        while (generate)
+        {
+            Vector3 circleCenter = transform.forward * circleDistance;
+            Vector3 randomPoint = new Vector3(Random.Range(-1f, 1f),0,Random.Range(-1f, 1f)).normalized * circleRadius;
+            target = transform.position + circleCenter + randomPoint;
+             Debug.Log($"Nuevo targert {target}.");
+           yield return new WaitForSeconds(15f);
+        }
 
     }
-
-    public void RandomObject()
+    void OnDrawGizmos()
     {
-        
-         seek = new GameObject();
-        
+        Gizmos.color = Color.blue;
+
+        Vector3 circleCenter = transform.position + transform.forward * circleDistance;
+        Gizmos.DrawWireSphere(circleCenter, circleRadius);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(target, 0.3f);
     }
 }
