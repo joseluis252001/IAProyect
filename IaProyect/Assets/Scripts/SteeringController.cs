@@ -1,5 +1,8 @@
 using JetBrains.Annotations;
+using Unity.Mathematics;
 using UnityEngine;
+using System.Collections;
+using UnityEngine.Rendering;
 public enum TipoNPC
 {
     Conejo,
@@ -38,16 +41,20 @@ public class SteeringController : MonoBehaviour
 
     public Vector3 steering;
     public float limiteMapa;
-
-
+    public float tiempo ;
+    public bool generate;
+    public float wanderAngle;
     void Start()
     {
+        
         seek = new Seek(transform.position, maxEnemySpeed);
         seek.usarArrival = true; 
 
         flee = new Flee(transform.position, maxEnemySpeed);
 
         wander = new Wander(maxEnemySpeed);
+
+        StartCoroutine(TiempoWander());
 
     }
 
@@ -85,6 +92,8 @@ public class SteeringController : MonoBehaviour
 
             else
              {
+
+        //-DebugOverlay de ser capas de actualizar el wander y el angulo del wander cada cierto tiempo
              steering = wander.GetSteeringForce(transform.position, velocity, transform);
              }
         }
@@ -151,6 +160,27 @@ public class SteeringController : MonoBehaviour
         Gizmos.color = Color.blue;
         Vector3 circleCenter = transform.position + transform.forward * circleDistance;
         Gizmos.DrawWireSphere(circleCenter, circleRadius);
+    }
+
+    // Crear corrutinas
+    // Ejecutar 
+
+    public IEnumerator TiempoWander()
+    {
+
+        while(generate)
+        {
+            //ángulo en un punto 3D sobre el borde de tu círculo
+            float x = Mathf.Cos(wanderAngle) * circleRadius;
+            float z = Mathf.Sin(wanderAngle) * circleRadius;
+            Debug.Log($"{wanderAngle} Angulo nuevo");
+             steering = wander.GetSteeringForce(transform.position, velocity, transform);
+             yield return new WaitForSeconds(tiempo);
+               Debug.Log($"{wander} posision wander");
+
+             //actualizar el wander
+        }
+        
     }
 
 }

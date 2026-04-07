@@ -26,9 +26,9 @@ public class WanderController : MonoBehaviour
 
              Debug.Log($"{target} se esta usando");
             yield return new WaitForSeconds(tiempo);
-           
+             Vector3 randomPoint = new Vector3(Random.Range(-1f, 1f),0,Random.Range(-1f, 1f)).normalized;
+            
         }
-
     }
 
     void Start()
