@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Flee
+public class Flee : Istate
 {
     public Vector3 velocity;
     public Vector3 targetPosition;

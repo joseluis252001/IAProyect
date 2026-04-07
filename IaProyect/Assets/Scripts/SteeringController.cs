@@ -22,7 +22,7 @@ public class SteeringController : MonoBehaviour
     public Transform target;
     public GameObject player;
     //velocidad actual
-    Vector3 velocity = Vector3.zero;
+    public Vector3 velocity = Vector3.zero;
     // velocidad maxima del npc
     public float maxEnemySpeed = 5f;
     //fuerza mazima del npc
@@ -38,6 +38,8 @@ public class SteeringController : MonoBehaviour
 
     public Vector3 steering;
     public float limiteMapa;
+
+
     void Start()
     {
         seek = new Seek(transform.position, maxEnemySpeed);

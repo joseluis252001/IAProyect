@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Wander
+public class Wander : Istate
 {
     public Vector3 velocity;
     public float circleDistance = 5f;
@@ -27,8 +27,7 @@ public class Wander
     Vector3 circleCenter = forward * circleDistance;
 
     //punto aleatorio
-    Vector3 randomPoint = new Vector3(Random.Range(-1f, 1f),0,Random.Range(-1f, 1f)
-    ).normalized * circleRadius;
+    Vector3 randomPoint = new Vector3(Random.Range(-1f, 1f),0,Random.Range(-1f, 1f)).normalized * circleRadius;
 
     //target final
     Vector3 target = currentPosition + circleCenter + randomPoint;

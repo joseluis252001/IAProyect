@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -7882117576301471043}
   - component: {fileID: -7223899156759292179}
   m_Layer: 0
-  m_Name: NPC
+  m_Name: Npc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -132,8 +132,9 @@ MonoBehaviour:
   rangoVision: 10
   target: {fileID: 0}
   player: {fileID: 0}
+  velocity: {x: 0, y: 0, z: 0}
   maxEnemySpeed: 5
-  maxEnemyForce: 10
+  maxEnemyForce: 1
   mass: 1
   circleDistance: 3
   circleRadius: 1

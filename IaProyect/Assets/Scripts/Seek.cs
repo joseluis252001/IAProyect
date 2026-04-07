@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Seek
+public class Seek : Istate
 {
     //velocidad actual
     public Vector3 velocity;
