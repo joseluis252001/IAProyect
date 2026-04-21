@@ -1,154 +1,126 @@
-using JetBrains.Annotations;
-using Unity.Mathematics;
 using UnityEngine;
 using System.Collections;
-using UnityEngine.Rendering;
+
 public enum TipoNPC
 {
     Conejo,
     Goblin
 }
+
 public class SteeringController : MonoBehaviour
 {
-    //comportamiento seguir
     Seek seek;
-    //comportamiento huir
     Flee flee;
-    //Comportamiento adelante natural
     Wander wander;
+
+    [Header("Tipo de NPC")]
     public TipoNPC tipo;
-    //rango del npc
-    public float rango = 5f;
-    public float rangoPeligro = 6;
-    public float rangoVision = 10;
-    //que persige
+
+    [Header("Objetivo (Jugador u otro NPC)")]
     public Transform target;
-    public GameObject player;
-    //velocidad actual
+
+    [Header("Rangos de detección")]
+    public float rangoVision = 10f;
+    public float rangoPeligro = 6f;
+
+    [Header("Movimiento")]
     public Vector3 velocity = Vector3.zero;
-    // velocidad maxima del npc
     public float maxEnemySpeed = 5f;
-    //fuerza mazima del npc
-    public float maxEnemyForce = 10;
-    //masa maxima del npc
+    public float maxEnemyForce = 10f;
     public float mass = 1f;
 
+    [Header("Límites del mapa")]
+    public float limiteMapa = 26f;
+
+    [Header("Wander (Movimiento natural)")]
     public float circleDistance = 2f;
     public float circleRadius = 3f;
 
-    public float lineGizmo; 
-    public float distance;
-
-    public Vector3 steering;
-    public float limiteMapa;
-    public float tiempo ;
-    public bool generate;
+    [Header("Control de Wander")]
     public float wanderAngle;
+    public float cambioAngulo = 10f;   // qué tanto gira
+    public float tiempoWander = 0.3f;  // cada cuánto cambia
+
+    Vector3 steering;
+    bool generate;
+
     void Start()
     {
-        
         seek = new Seek(transform.position, maxEnemySpeed);
-        seek.usarArrival = true; 
+        seek.usarArrival = true;
 
         flee = new Flee(transform.position, maxEnemySpeed);
 
         wander = new Wander(maxEnemySpeed);
 
         StartCoroutine(TiempoWander());
-
     }
-
     void FixedUpdate()
     {
-        // //donde esta el objetivo
-        // seek.targetPosition = target.position;
-        // //que tan rapido va el npc
-        // seek.velocity = velocity;
-        // //que velocidad puede tener el npc
-        // seek.maxSpeed = maxEnemySpeed;
-        // //muevete de esta manera
-        // Vector3 steering = seek.GetSteeringForce(transform.position);
-        // //limito la fuerza
-        // steering = Vector3.ClampMagnitude(steering, maxEnemyForce);
-        // steering /= mass;
-        // //calcula la nueva velocidad
-        // velocity = Vector3.ClampMagnitude(velocity + steering, maxEnemySpeed);
-        // //mueve al npc
-        // transform.position += velocity * Time.fixedDeltaTime;
-        //float distancia = Vector3.Distance(transform.position, target.position);
-       
-    float distancia = Vector3.Distance(transform.position, target.position);
+        float distancia = Vector3.Distance(transform.position, target.position);
 
         if (tipo == TipoNPC.Conejo)
         {
-    
-        if (distancia < rangoVision)
-        {
-        flee.targetPosition = target.position;
-        flee.velocity = velocity;
-        flee.maxSpeed = maxEnemySpeed;
-        steering = flee.GetSteeringForce(transform.position);
-        }
-
-            else
-             {
-
-        //-DebugOverlay de ser capas de actualizar el wander y el angulo del wander cada cierto tiempo
-             steering = wander.GetSteeringForce(transform.position, velocity, transform);
-             }
-        }
-
-        else if (tipo == TipoNPC.Goblin)
-        {
-    
+            // CONEJO → HUIR
             if (distancia < rangoVision)
             {
-            seek.targetPosition = target.position;
-            seek.velocity = velocity;
-            seek.maxSpeed = maxEnemySpeed;
-            steering = seek.GetSteeringForce(transform.position);
-            }
+                flee.targetPosition = target.position;
+                flee.velocity = velocity;
+                flee.maxSpeed = maxEnemySpeed;
 
+                steering = flee.GetSteeringForce(transform.position);
+            }
             else
             {
-             steering = wander.GetSteeringForce(transform.position, velocity, transform);
+                steering = wander.GetSteeringForce(transform.position, velocity, transform, wanderAngle);
+            }
+        }
+        else if (tipo == TipoNPC.Goblin)
+        {
+            // GOBLIN → PERSEGUIR
+            if (distancia < rangoVision)
+            {
+                seek.targetPosition = target.position;
+                seek.velocity = velocity;
+                seek.maxSpeed = maxEnemySpeed;
+
+                steering = seek.GetSteeringForce(transform.position);
+            }
+            else
+            {
+                steering = wander.GetSteeringForce(transform.position, velocity, transform, wanderAngle);
             }
         }
 
         MovimientoNpc();
     }
-
-    public void MovimientoNpc()
+    //MOVIMIENTO DEL NPC
+    void MovimientoNpc()
     {
-        //aplicar fisica
         steering = Vector3.ClampMagnitude(steering, maxEnemyForce);
         steering /= mass;
 
-        //nueva velocidad
         velocity = Vector3.ClampMagnitude(velocity + steering, maxEnemySpeed);
 
-        //mover NPC
         transform.position += velocity * Time.fixedDeltaTime;
+
+        // Rotación
         if (velocity != Vector3.zero)
-    {
-        transform.forward = velocity.normalized;
-    }
-    Vector3 pos = transform.position;
+        {
+            transform.forward = velocity.normalized;
+        }
 
-    pos.x = Mathf.Clamp(pos.x, -limiteMapa, limiteMapa);
-    pos.z = Mathf.Clamp(pos.z, -limiteMapa, limiteMapa);
-
-    transform.position = pos;
-
-    // rotación
-    if (velocity != Vector3.zero)
-    {
-        transform.forward = velocity.normalized;
+        // Limitar dentro del mapa
+        Vector3 pos = transform.position;
+        pos.x = Mathf.Clamp(pos.x, -limiteMapa, limiteMapa);
+        pos.z = Mathf.Clamp(pos.z, -limiteMapa, limiteMapa);
+        transform.position = pos;
     }
-    }
+
+    // DEBUG (GIZMOS)
     void OnDrawGizmos()
     {
-         // rango vision
+        // rango visión
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, rangoVision);
 
@@ -156,31 +128,23 @@ public class SteeringController : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, rangoPeligro);
 
-        // circulo wander
+        // círculo wander
         Gizmos.color = Color.blue;
         Vector3 circleCenter = transform.position + transform.forward * circleDistance;
         Gizmos.DrawWireSphere(circleCenter, circleRadius);
     }
 
-    // Crear corrutinas
-    // Ejecutar 
-
-    public IEnumerator TiempoWander()
+   
+    // CORRUTINA WANDER
+    IEnumerator TiempoWander()
     {
+        generate = true;
 
-        while(generate)
+        while (generate)
         {
-            //ángulo en un punto 3D sobre el borde de tu círculo
-            float x = Mathf.Cos(wanderAngle) * circleRadius;
-            float z = Mathf.Sin(wanderAngle) * circleRadius;
-            Debug.Log($"{wanderAngle} Angulo nuevo");
-             steering = wander.GetSteeringForce(transform.position, velocity, transform);
-             yield return new WaitForSeconds(tiempo);
-               Debug.Log($"{wander} posision wander");
+            wanderAngle += UnityEngine.Random.Range(-cambioAngulo, cambioAngulo);
 
-             //actualizar el wander
+            yield return new WaitForSeconds(tiempoWander);
         }
-        
     }
-
 }
